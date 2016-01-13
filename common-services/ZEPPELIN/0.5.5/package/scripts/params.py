@@ -10,16 +10,16 @@ from resource_management.libraries.functions.default import default
 
 
 def get_port_from_url(address):
-  if not is_empty(address):
-    return address.split(':')[-1]
-  else:
-    return address
-    
+    if not is_empty(address):
+        return address.split(':')[-1]
+    else:
+        return address
+
 # server configurations
 config = Script.get_config()
 
 #e.g. /var/lib/ambari-agent/cache/stacks/HDP/2.2/services/zeppelin-stack/package
-service_packagedir = os.path.realpath(__file__).split('/scripts')[0] 
+service_packagedir = os.path.realpath(__file__).split('/scripts')[0]
 
 zeppelin_dirname = 'incubator-zeppelin'
 
@@ -54,8 +54,8 @@ zeppelin_log_dir = config['configurations']['zeppelin-env']['zeppelin_log_dir']
 zeppelin_pid_dir = config['configurations']['zeppelin-env']['zeppelin_pid_dir']
 zeppelin_log_file = os.path.join(zeppelin_log_dir,'zeppelin-setup.log')
 zeppelin_hdfs_user_dir = format("/user/{zeppelin_user}")
-  
-zeppelin_dir = os.path.join(*[install_dir,zeppelin_dirname]) 
+
+zeppelin_dir = os.path.join(*[install_dir,zeppelin_dirname])
 conf_dir = os.path.join(*[install_dir,zeppelin_dirname,'conf'])
 notebook_dir = os.path.join(*[install_dir,zeppelin_dirname,'notebook'])
 
@@ -73,31 +73,31 @@ zeppelin_internalhost = str(master_configs['zeppelin_master_hosts'][0])
 #detect HS2 details, if installed
 
 if 'hive_server_host' in master_configs:
-        hive_server_host = str(master_configs['hive_server_host'][0])
-        hive_metastore_host = str(master_configs['hive_metastore_host'][0])
-        hive_metastore_port = str(get_port_from_url(config['configurations']['hive-site']['hive.metastore.uris']))
+    hive_server_host = str(master_configs['hive_server_host'][0])
+    hive_metastore_host = str(master_configs['hive_metastore_host'][0])
+    hive_metastore_port = str(get_port_from_url(config['configurations']['hive-site']['hive.metastore.uris']))
 else:
-        hive_server_host = None
-        hive_metastore_host = '0.0.0.0'
-        hive_metastore_port = None
-        
+    hive_server_host = None
+    hive_metastore_host = '0.0.0.0'
+    hive_metastore_port = None
+
 #detect hbase details if installed
 if 'hbase_master_hosts' in master_configs and 'hbase-site' in config['configurations']:
-  zookeeper_znode_parent = config['configurations']['hbase-site']['zookeeper.znode.parent']
-  hbase_zookeeper_quorum = config['configurations']['hbase-site']['hbase.zookeeper.quorum']
+    zookeeper_znode_parent = config['configurations']['hbase-site']['zookeeper.znode.parent']
+    hbase_zookeeper_quorum = config['configurations']['hbase-site']['hbase.zookeeper.quorum']
 else:
-  zookeeper_znode_parent = None
-  hbase_zookeeper_quorum = None
+    zookeeper_znode_parent = None
+    hbase_zookeeper_quorum = None
 
 #detect spark queue
 if 'spark.yarn.queue' in config['configurations']['spark-defaults']:
-  spark_queue = config['configurations']['spark-defaults']['spark.yarn.queue']
+    spark_queue = config['configurations']['spark-defaults']['spark.yarn.queue']
 else:
-  spark_queue = 'default'
+    spark_queue = 'default'
 
 #if user did not specify public hostname of zeppelin node, proceed with internal name instead
-if zeppelin_host.strip() == '': 
-  zeppelin_host = zeppelin_internalhost
+if zeppelin_host.strip() == '':
+    zeppelin_host = zeppelin_internalhost
 
 
 #e.g. 2.3
@@ -112,4 +112,4 @@ hdp_version = full_version
 
 #e.g. 2.3.0.0-2130
 if hasattr(functions, 'get_hdp_version'):
-  spark_client_version = functions.get_hdp_version('spark-client')
+    spark_client_version = functions.get_hdp_version('spark-client')

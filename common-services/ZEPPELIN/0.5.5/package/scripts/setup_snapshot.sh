@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e 
+set -e
 #e.g. /opt/incubator-zeppelin
 export INSTALL_DIR=$1
 
@@ -25,17 +25,17 @@ SetupZeppelin () {
 
 	echo "Setting up zeppelin at $INSTALL_DIR"
 	cd $INSTALL_DIR
-	
+
 	rm -rf notebook/*
 
 	#clean old notebooks
 	if [ -d "notebook/2AHFKRNDZ" ]; then
 		rm -rf notebook/2AHFKRNDZ
-	fi	
+	fi
 
 	if [ -d "notebook/2AK7D7JNE" ]; then
 		rm -rf notebook/2AK7D7JNE
-	fi	
+	fi
 
 
 	if [ -d "notebook/2A94M5J1Z" ]; then
@@ -49,12 +49,12 @@ SetupZeppelin () {
 		echo "<property>" >> conf/hive-site.xml
 		echo "   <name>hive.metastore.uris</name>" >> conf/hive-site.xml
 		echo "   <value>thrift://$HIVE_METASTORE_HOST:$HIVE_METASTORE_PORT</value>" >> conf/hive-site.xml
-		echo "</property>" >> conf/hive-site.xml		
+		echo "</property>" >> conf/hive-site.xml
 		echo "</configuration>" >> conf/hive-site.xml
 	else
-		echo "HIVE_METASTORE_HOST is $HIVE_METASTORE_HOST: Skipping hive-site.xml setup as Hive does not seem to be installed"	
+		echo "HIVE_METASTORE_HOST is $HIVE_METASTORE_HOST: Skipping hive-site.xml setup as Hive does not seem to be installed"
 	fi
-	
+
     if [[ $SETUP_VIEW == "true" ]]
     then
 		echo "Importing notebooks"
@@ -67,38 +67,38 @@ SetupZeppelin () {
 		fi
 		cd ..
 	else
-		echo "Skipping import of sample notebooks"	
+		echo "Skipping import of sample notebooks"
 	fi
 
-	
+
 	#setup view
 	echo "Compiling Zeppelin view..."
 	cd
-	if [ -d iframe-view ] 
+	if [ -d iframe-view ]
 	then
 		rm -rf iframe-view
-	fi	
-	if [ -d zeppelin-view ] 
+	fi
+	if [ -d zeppelin-view ]
 	then
 		rm -rf zeppelin-view
-	fi	
+	fi
 
     if [[ $SETUP_VIEW == "true" ]]
     then
 		git clone https://github.com/abajwa-hw/iframe-view.git
-		sed -i "s/iFrame View/Zeppelin/g" iframe-view/src/main/resources/view.xml	
-		sed -i "s/IFRAME_VIEW/ZEPPELIN/g" iframe-view/src/main/resources/view.xml	
-		sed -i "s/sandbox.hortonworks.com:6080/$ZEPPELIN_HOST:$ZEPPELIN_PORT/g" iframe-view/src/main/resources/index.html	
-		sed -i "s/iframe-view/zeppelin-view/g" iframe-view/pom.xml	
-		sed -i "s/Ambari iFrame View/Zeppelin View/g" iframe-view/pom.xml	
+		sed -i "s/iFrame View/Zeppelin/g" iframe-view/src/main/resources/view.xml
+		sed -i "s/IFRAME_VIEW/ZEPPELIN/g" iframe-view/src/main/resources/view.xml
+		sed -i "s/sandbox.hortonworks.com:6080/$ZEPPELIN_HOST:$ZEPPELIN_PORT/g" iframe-view/src/main/resources/index.html
+		sed -i "s/iframe-view/zeppelin-view/g" iframe-view/pom.xml
+		sed -i "s/Ambari iFrame View/Zeppelin View/g" iframe-view/pom.xml
 		mv iframe-view zeppelin-view
 		cd zeppelin-view
-		mvn clean package	
+		mvn clean package
 	else
-		echo "Skipping setup of Ambari view"	
-	fi	
+		echo "Skipping setup of Ambari view"
+	fi
 
-	
+
 }
 
 
