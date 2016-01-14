@@ -19,17 +19,6 @@
                         <timeout>10000</timeout>
                     </commandScript>
                 </component>
-                <component>
-                    <name>ZEPPELIN_CLIENT</name>
-                    <displayName>Zeppelin Notebook Client</displayName>
-                    <category>CLIENT</category>
-                    <cardinality>1</cardinality>
-                    <commandScript>
-                        <script>scripts/client.py</script>
-                        <scriptType>PYTHON</scriptType>
-                        <timeout>10000</timeout>
-                    </commandScript>
-                </component>
             </components>
             <osSpecifics>
                 <osSpecific>
@@ -41,6 +30,9 @@
                     </packages>
                 </osSpecific>
             </osSpecifics>
+            <requiredServices>
+                <service>SPARK</service>
+            </requiredServices>
             <configuration-dependencies>
                 <config-type>zeppelin-ambari-config</config-type>
                 <config-type>zeppelin-config</config-type>
