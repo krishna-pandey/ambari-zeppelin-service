@@ -14,20 +14,6 @@ class Master(Script):
 
         env.set_params(params)
 
-        #location of prebuilt package from april 2015
-        snapshot_package_12='https://www.dropbox.com/s/nhv5j42qsybldh4/zeppelin-0.5.0-SNAPSHOT.tar.gz'
-
-
-        #location of prebuilt package from Oct 23 2015 using spark 1.3.1 that comes with HDP 2.3.0
-        snapshot_package_13='https://www.dropbox.com/s/k4dvmmxzd08q3h9/zeppelin-0.5.5-incubating-SNAPSHOT-repackage.tar.gz'
-
-        #location of prebuilt 0.5.5 package compiled using HDP Spark 1.4.1 TP that comes with HDP 2.3.2
-        snapshot_package_14='https://www.dropbox.com/s/nwpv7dr1a724vtv/zeppelin-0.5.5-incubating-HDP232.tar.gz?dl=0'
-
-        #location of prebuilt 0.5.5 package compiled using HDP Spark 1.5.1 TP
-        snapshot_package_15='https://dl.dropboxusercontent.com/u/114020/zeppelin-snapshots/spark-1.5.1TP-HDP2.3.2/zeppelin-0.5.5-incubating-spark151-tp.tar.gz'
-
-
         Execute('find '+params.service_packagedir+' -iname "*.sh" | xargs chmod +x')
 
         #Create user and group if they don't exist
@@ -75,95 +61,32 @@ class Master(Script):
                     Execute('pip install numpy scipy pandas scikit-learn')
 
         #User selected option to use prebuilt zeppelin package
-        if params.setup_prebuilt:
-
-            #choose appropriate package based on spark version passes in by user
-            if params.spark_version == '1.4':
-                Execute('echo Processing with zeppelin tar compiled with spark 1.4')
-                snapshot_package = snapshot_package_14
-            elif params.spark_version == '1.5':
-                Execute('echo Processing with zeppelin tar compiled with spark 1.5')
-                snapshot_package = snapshot_package_15
-            elif params.spark_version == '1.3':
-                Execute('echo Processing with zeppelin tar compiled with spark 1.3')
-                snapshot_package = snapshot_package_13
-            elif params.spark_version == '1.2':
-                Execute('echo Processing with zeppelin tar compiled with spark 1.2')
-                snapshot_package = snapshot_package_12
-            else:
-                Execute('echo Unrecognized spark version: ' + params.spark_version + ' defaulting to 1.3')
-                snapshot_package = snapshot_package_13
-
-            #install maven as root
-            if params.setup_view:
-                Execute('echo Installing packages')
-
-                #Install maven repo if needed
-                self.install_mvn_repo()
-                # Install packages listed in metainfo.xml
-                self.install_packages(env)
 
 
-            #Fetch and unzip snapshot build, if no cached zeppelin tar package exists on Ambari server node
-            if not os.path.exists(params.temp_file):
-                Execute('wget '+snapshot_package+' -O '+params.temp_file+' -a '  + params.zeppelin_log_file, user=params.zeppelin_user)
-            Execute('tar -zxvf '+params.temp_file+' -C ' + params.zeppelin_dir + ' >> ' + params.zeppelin_log_file, user=params.zeppelin_user)
-            Execute('mv '+params.zeppelin_dir+'/*/* ' + params.zeppelin_dir, user=params.zeppelin_user)
+
+        #Fetch and unzip snapshot build, if no cached zeppelin tar package exists on Ambari server node
+        #Execute('yum install -y zeppelin')
+        Execute('rpm2cpio /home/vagrant/zeppelin_2_4_0_0_130-0.6.0.2.4.0.0-130.el6.noarch.rpm | cpio -idmv')
+        Execute('rm -rf /usr/hdp/current/zeppelin')
+        Execute('ln -s /usr/hdp/2.3.99.0-196/zeppelin /usr/hdp/current/zeppelin')
 
 
-            #update the configs specified by user
-            self.configure(env)
+        #update the configs specified by user
+        self.configure(env)
 
-            #run setup_snapshot.sh
-            Execute(format("{service_packagedir}/scripts/setup_snapshot.sh {zeppelin_dir} {hive_metastore_host} {hive_metastore_port} {zeppelin_host} {zeppelin_port} {setup_view}  >> {zeppelin_log_file}"), user=params.zeppelin_user)
+        #run setup_snapshot.sh
+        Execute(format("{service_packagedir}/scripts/setup_snapshot.sh {zeppelin_dir} {hive_metastore_host} {hive_metastore_port} {zeppelin_host} {zeppelin_port} {setup_view}  >> {zeppelin_log_file}"), user=params.zeppelin_user)
 
-            #if zeppelin installed on ambari server, copy view jar into ambari views dir
-            if params.setup_view:
-                if params.ambari_host == params.zeppelin_internalhost and not os.path.exists('/var/lib/ambari-server/resources/views/zeppelin-view-1.0-SNAPSHOT.jar'):
-                    Execute('echo "Copying zeppelin view jar to ambari views dir"')
-                    Execute('cp /home/'+params.zeppelin_user+'/zeppelin-view/target/*.jar /var/lib/ambari-server/resources/views')
-
-
-            Execute('cp ' + params.zeppelin_dir+'/interpreter/spark/dep/zeppelin-spark-dependencies-*.jar /tmp', user=params.zeppelin_user)
-
-        else:
-            #User selected option to build zeppelin from source
-
-            if params.setup_view:
-                #Install maven repo if needed
-                self.install_mvn_repo()
-                # Install packages listed in metainfo.xml
-                self.install_packages(env)
-
-            #Execute('yum -y install java-1.7.0-openjdk-devel >> ' + params.zeppelin_log_file)
-            #if not os.path.exists('/root/.m2'):
-            #  os.makedirs('/root/.m2')
-            #Execute('cp '+params.service_packagedir+'/files/settings.xml /root/.m2/')
-
-            Execute('echo Compiling zeppelin from source')
-            Execute('cd '+params.install_dir+'; git clone https://github.com/apache/incubator-zeppelin  >> ' + params.zeppelin_log_file)
-            Execute('chown -R ' + params.zeppelin_user + ':' + params.zeppelin_group + ' ' + params.zeppelin_dir)
-            #Execute('cd '+params.install_dir+'/incubator-zeppelin; git checkout -b branch-0.5;')
-
-            #update the configs specified by user
-            self.configure(env)
-
-            Execute('cd '+params.zeppelin_dir+'; mvn -Phadoop-2.6 -Dhadoop.version=2.7.1 -Pspark-'+params.spark_version+' -Ppyspark -Pyarn clean package -P build-distr -DskipTests >> ' + params.zeppelin_log_file, user=params.zeppelin_user)
-
-            #run setup_snapshot.sh
-            Execute(format("{service_packagedir}/scripts/setup_snapshot.sh {zeppelin_dir} {hive_metastore_host} {hive_metastore_port} {zeppelin_host} {zeppelin_port} {setup_view}  >> {zeppelin_log_file}"), user=params.zeppelin_user)
-
-            #if zeppelin installed on ambari server, copy view jar into ambari views dir
-            if params.setup_view:
-                if params.ambari_host == params.zeppelin_internalhost and not os.path.exists('/var/lib/ambari-server/resources/views/zeppelin-view-1.0-SNAPSHOT.jar'):
-                    Execute('echo "Copying zeppelin view jar to ambari views dir"')
-                    Execute('cp /home/'+params.zeppelin_user+'/zeppelin-view/target/*.jar /var/lib/ambari-server/resources/views')
+        #if zeppelin installed on ambari server, copy view jar into ambari views dir
+        if params.setup_view:
+            if params.ambari_host == params.zeppelin_internalhost and not os.path.exists('/var/lib/ambari-server/resources/views/zeppelin-view-1.0-SNAPSHOT.jar'):
+                Execute('echo "Copying zeppelin view jar to ambari views dir"')
+                Execute('cp /home/'+params.zeppelin_user+'/zeppelin-view/target/*.jar /var/lib/ambari-server/resources/views')
 
 
-                    #def install_el6_packages(self, params):
-                    #Execute('curl -o /etc/yum.repos.d/epel-apache-maven.repo https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo')
-                    #Execute('yum -y install git >> ' + params.zeppelin_log_file)
-                    #Execute('yum -y install apache-maven >> ' + params.zeppelin_log_file)
+        Execute('cp ' + params.zeppelin_dir+'/interpreter/spark/dep/zeppelin-spark-dependencies-*.jar /tmp', user=params.zeppelin_user)
+
+
 
     def create_linux_user(self, user, group):
         try: pwd.getpwnam(user)
