@@ -1,6 +1,21 @@
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
 
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
 <configuration>
 
     <!-- params for service -->
@@ -41,9 +56,9 @@
 
     <property>
         <name>zeppelin.install.dir</name>
-        <value>/opt</value>
+        <value>/usr/hdp/current</value>
         <description>Local dir where to install component. incubator-zeppelin folder will be created
-            as a subdir of this dir e.g. /opt/incubator-zeppelin
+            as a subdir of this dir e.g. /usr/hdp/current
         </description>
     </property>
 
@@ -56,17 +71,8 @@
     </property>
 
     <property>
-        <name>zeppelin.temp.file</name>
-        <value>/tmp/zeppelin.tar.gz</value>
-        <description>Temporary file where pre-built package will be downloaded to. If your env has
-            limited space under /tmp, change this to different location. In this case you must
-            ensure that the zeppelin user must be able to write to this location.
-        </description>
-    </property>
-
-    <property>
         <name>zeppelin.host.publicname</name>
-        <value></value>
+        <value> </value>
         <description>This is used to setup the Ambari view for Zeppelin. Set this to the public
             host/IP of zeppelin node (which must must be reachable from your local machine). If
             installing on sandbox (or local VM), change this to the IP address of VM.
