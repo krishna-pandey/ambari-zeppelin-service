@@ -58,6 +58,7 @@ SetupZeppelin () {
     if [[ $SETUP_VIEW == "true" ]]
     then
 		echo "Importing notebooks"
+		mkdir -p notebook
 		cd notebook
 		wget https://github.com/hortonworks-gallery/zeppelin-notebooks/archive/master.zip -O notebooks.zip
 		unzip notebooks.zip
@@ -86,17 +87,18 @@ SetupZeppelin () {
     if [[ $SETUP_VIEW == "true" ]]
     then
 		git clone https://github.com/abajwa-hw/iframe-view.git
-		sed -i "s/iFrame View/Zeppelin/g" iframe-view/src/main/resources/view.xml	
-		sed -i "s/IFRAME_VIEW/ZEPPELIN/g" iframe-view/src/main/resources/view.xml	
-		sed -i "s/sandbox.hortonworks.com:6080/$ZEPPELIN_HOST:$ZEPPELIN_PORT/g" iframe-view/src/main/resources/index.html	
-		sed -i "s/iframe-view/zeppelin-view/g" iframe-view/pom.xml	
-		sed -i "s/Ambari iFrame View/Zeppelin View/g" iframe-view/pom.xml	
+		sed -i "s/iFrame View/Zeppelin/g" iframe-view/src/main/resources/view.xml
+		sed -i "s/IFRAME_VIEW/ZEPPELIN/g" iframe-view/src/main/resources/view.xml
+		sed -i "s/sandbox.hortonworks.com:6080/$ZEPPELIN_HOST:$ZEPPELIN_PORT/g" iframe-view/src/main/resources/index.html
+		sed -i "s/iframe-view/zeppelin-view/g" iframe-view/pom.xml
+		sed -i "s/Ambari iFrame View/Zeppelin View/g" iframe-view/pom.xml
 		mv iframe-view zeppelin-view
 		cd zeppelin-view
-		mvn clean package	
+		mvn clean package
 	else
-		echo "Skipping setup of Ambari view"	
-	fi	
+		echo "Skipping setup of Ambari view"
+	fi
+	echo "Skipping setup of Ambari view"
 
 	
 }
