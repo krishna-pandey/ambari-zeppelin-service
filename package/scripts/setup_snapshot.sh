@@ -46,85 +46,85 @@ echo "SETUP_VIEW is $SETUP_VIEW"
 
 SetupZeppelin () {
 
-	echo "Setting up zeppelin at $INSTALL_DIR"
-	cd $INSTALL_DIR
-	
-	rm -rf notebook/*
+    echo "Setting up zeppelin at $INSTALL_DIR"
+    cd $INSTALL_DIR
 
-	#clean old notebooks
-	if [ -d "notebook/2AHFKRNDZ" ]; then
-		rm -rf notebook/2AHFKRNDZ
-	fi	
+    rm -rf notebook/*
 
-	if [ -d "notebook/2AK7D7JNE" ]; then
-		rm -rf notebook/2AK7D7JNE
-	fi	
+    #clean old notebooks
+    if [ -d "notebook/2AHFKRNDZ" ]; then
+        rm -rf notebook/2AHFKRNDZ
+    fi
+
+    if [ -d "notebook/2AK7D7JNE" ]; then
+        rm -rf notebook/2AK7D7JNE
+    fi
 
 
-	if [ -d "notebook/2A94M5J1Z" ]; then
-		rm -rf notebook/2A94M5J1Z
-	fi
+    if [ -d "notebook/2A94M5J1Z" ]; then
+        rm -rf notebook/2A94M5J1Z
+    fi
 
-	if [ "$HIVE_METASTORE_HOST" != "0.0.0.0" ]
-	then
-		echo "Hive metastore detected: $HIVE_METASTORE_HOST. Setting up conf/hive-site.xml"
-		echo "<configuration>" > conf/hive-site.xml
-		echo "<property>" >> conf/hive-site.xml
-		echo "   <name>hive.metastore.uris</name>" >> conf/hive-site.xml
-		echo "   <value>thrift://$HIVE_METASTORE_HOST:$HIVE_METASTORE_PORT</value>" >> conf/hive-site.xml
-		echo "</property>" >> conf/hive-site.xml
-		echo "<property>" >> conf/hive-site.xml
-		echo "   <name>hive.server2.thrift.http.port</name>" >> conf/hive-site.xml
-		echo "   <value>$HIVE_SERVER_PORT</value>" >> conf/hive-site.xml
-		echo "</property>" >> conf/hive-site.xml
-		echo "</configuration>" >> conf/hive-site.xml
-	else
-		echo "HIVE_METASTORE_HOST is $HIVE_METASTORE_HOST: Skipping hive-site.xml setup as Hive does not seem to be installed"	
-	fi
-	
+    if [ "$HIVE_METASTORE_HOST" != "0.0.0.0" ]
+    then
+        echo "Hive metastore detected: $HIVE_METASTORE_HOST. Setting up conf/hive-site.xml"
+        echo "<configuration>" > conf/hive-site.xml
+        echo "<property>" >> conf/hive-site.xml
+        echo "   <name>hive.metastore.uris</name>" >> conf/hive-site.xml
+        echo "   <value>thrift://$HIVE_METASTORE_HOST:$HIVE_METASTORE_PORT</value>" >> conf/hive-site.xml
+        echo "</property>" >> conf/hive-site.xml
+        echo "<property>" >> conf/hive-site.xml
+        echo "   <name>hive.server2.thrift.http.port</name>" >> conf/hive-site.xml
+        echo "   <value>$HIVE_SERVER_PORT</value>" >> conf/hive-site.xml
+        echo "</property>" >> conf/hive-site.xml
+        echo "</configuration>" >> conf/hive-site.xml
+    else
+        echo "HIVE_METASTORE_HOST is $HIVE_METASTORE_HOST: Skipping hive-site.xml setup as Hive does not seem to be installed"
+    fi
+
     if [[ $SETUP_VIEW == "true" ]]
     then
-		echo "Importing notebooks"
-		mkdir -p notebook
-		cd notebook
-		wget https://github.com/hortonworks-gallery/zeppelin-notebooks/archive/master.zip -O notebooks.zip
-		unzip notebooks.zip
-		if [ -d "zeppelin-notebooks-master" ]; then
-			mv zeppelin-notebooks-master/* .
-			rm -rf zeppelin-notebooks-master
-		fi
-		cd ..
-	else
-		echo "Skipping import of sample notebooks"	
-	fi
+        echo "Importing notebooks"
+        mkdir -p notebook
+        cd notebook
+        wget https://github.com/hortonworks-gallery/zeppelin-notebooks/archive/master.zip -O notebooks.zip
+        unzip notebooks.zip
 
-	
-	#setup view
-	echo "Compiling Zeppelin view..."
-	cd
-	if [ -d iframe-view ] 
-	then
-		rm -rf iframe-view
-	fi	
-	if [ -d zeppelin-view ] 
-	then
-		rm -rf zeppelin-view
-	fi	
+        if [ -d "zeppelin-notebooks-master" ]; then
+            mv zeppelin-notebooks-master/* .
+            rm -rf zeppelin-notebooks-master
+        fi
+
+        cd ..
+    else
+        echo "Skipping import of sample notebooks"
+    fi
+
+
+    #setup view
+    echo "Compiling Zeppelin view..."
+    cd
+    if [ -d iframe-view ]
+    then
+        rm -rf iframe-view
+    fi
+    if [ -d zeppelin-view ]
+    then
+        rm -rf zeppelin-view
+    fi
 
     if [[ $SETUP_VIEW == "true" ]]
     then
         cp $PACKAGE_DIR/scripts/zeppelin-view-1.0-SNAPSHOT.jar .
         $java64_home/bin/jar xf zeppelin-view-1.0-SNAPSHOT.jar index.html
-		sed -i "s/HOST_NAME:HOST_PORT/$ZEPPELIN_HOST:$ZEPPELIN_PORT/g" index.html
+        sed -i "s/HOST_NAME:HOST_PORT/$ZEPPELIN_HOST:$ZEPPELIN_PORT/g" index.html
         $java64_home/bin/jar uf zeppelin-view-1.0-SNAPSHOT.jar index.html
-	else
-		echo "Skipping setup of Ambari view"
-	fi
-	echo "Skipping setup of Ambari view"
+    else
+        echo "Skipping setup of Ambari view"
+    fi
+    echo "Skipping setup of Ambari view"
 
-	
 }
-
 
 SetupZeppelin
 echo "Setup complete"
