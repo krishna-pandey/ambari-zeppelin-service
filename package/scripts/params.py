@@ -75,10 +75,12 @@ if 'hive_server_host' in master_configs:
     hive_metastore_host = str(master_configs['hive_metastore_host'][0])
     hive_metastore_port = str(
             get_port_from_url(config['configurations']['hive-site']['hive.metastore.uris']))
+    hive_server_port = str(config['configurations']['hive-site']['hive.server2.thrift.http.port'])
 else:
     hive_server_host = None
     hive_metastore_host = '0.0.0.0'
     hive_metastore_port = None
+    hive_server_port = None
 
 # detect hbase details if installed
 if 'hbase_master_hosts' in master_configs and 'hbase-site' in config['configurations']:

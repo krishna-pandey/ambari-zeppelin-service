@@ -81,13 +81,11 @@ class Master(Script):
         # update the configs specified by user
         self.configure(env)
 
-        self.install_maven()
-        self.install_git()
-
         # run setup_snapshot.sh
         Execute(format("{service_packagedir}/scripts/setup_snapshot.sh {zeppelin_dir} "
-                       "{hive_metastore_host} {hive_metastore_port} {zeppelin_host} {zeppelin_port}"
-                       " {setup_view}  >> {zeppelin_log_file}"),
+                       "{hive_metastore_host} {hive_metastore_port} {hive_server_port} "
+                       "{zeppelin_host} {zeppelin_port} {setup_view} {service_packagedir} "
+                       "{java64_home} >> {zeppelin_log_file}"),
                 user=params.zeppelin_user)
 
         # if zeppelin installed on ambari server, copy view jar into ambari views dir
@@ -95,7 +93,7 @@ class Master(Script):
             if params.ambari_host == params.zeppelin_internalhost and not os.path.exists(
                     '/var/lib/ambari-server/resources/views/zeppelin-view-1.0-SNAPSHOT.jar'):
                 Execute('echo "Copying zeppelin view jar to ambari views dir"')
-                Execute('cp /var/lib/zeppelin/zeppelin-view/target/*.jar '
+                Execute('cp /var/lib/zeppelin/*.jar '
                         '/var/lib/ambari-server/resources/views')
 
         Execute('cp ' + params.zeppelin_dir
@@ -186,23 +184,6 @@ class Master(Script):
                              + status_params.zeppelin_user + '*.pid')[0]
         check_process_status(pid_file)
 
-    def install_maven(self):
-        # for centos/RHEL 6/7 maven repo needs to be installed
-        distribution = platform.linux_distribution()[0].lower()
-        if distribution.startswith('centos') \
-                or distribution.startswith('red hat') \
-                        and not os.path.exists('/etc/yum.repos.d/epel-apache-maven.repo'):
-            Execute('curl -o /etc/yum.repos.d/epel-apache-maven.repo '
-                    'https://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo'
-                    )
-            Execute('yum install -y apache-maven')
-
-    def install_git(self):
-        distribution = platform.linux_distribution()[0].lower()
-        if distribution.startswith('centos') \
-                or distribution.startswith('red hat'):
-            Execute('yum install -y git')
-
     def update_zeppelin_interpreter(self):
         import params
         import json, urllib2
@@ -222,8 +203,9 @@ class Master(Script):
 
         # if hive installed, update hive settings and post to hive interpreter
         if (params.hive_server_host):
-            hivebody['properties'][
-                'hive.hiveserver2.url'] = 'jdbc:hive2://' + params.hive_server_host + ':10000'
+            hivebody['properties']['hive.hiveserver2.url'] = 'jdbc:hive2://' \
+                                                             + params.hive_server_host \
+                                                             + ':' + params.hive_server_port
             self.post_request(zeppelin_int_url + hivebody['id'], hivebody)
 
         # if hbase installed, update hbase settings and post to phoenix interpreter

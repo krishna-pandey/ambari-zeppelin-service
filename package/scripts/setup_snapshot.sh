@@ -9,17 +9,21 @@ export HIVE_METASTORE_HOST=$2
 #e.g. 9083
 export HIVE_METASTORE_PORT=$3
 
-export ZEPPELIN_HOST=$4
+#e.g. 10000
+export HIVE_SERVER_PORT=$4
 
-export ZEPPELIN_PORT=$5
+export ZEPPELIN_HOST=$5
+
+export ZEPPELIN_PORT=$6
 
 #if true, will setup Ambari view and import notebooks
-export SETUP_VIEW=$6
+export SETUP_VIEW=$7
+
+export PACKAGE_DIR=$8
+export java64_home=$9
+
 SETUP_VIEW=${SETUP_VIEW,,}
 echo "SETUP_VIEW is $SETUP_VIEW"
-
-
-
 
 SetupZeppelin () {
 
@@ -49,7 +53,11 @@ SetupZeppelin () {
 		echo "<property>" >> conf/hive-site.xml
 		echo "   <name>hive.metastore.uris</name>" >> conf/hive-site.xml
 		echo "   <value>thrift://$HIVE_METASTORE_HOST:$HIVE_METASTORE_PORT</value>" >> conf/hive-site.xml
-		echo "</property>" >> conf/hive-site.xml		
+		echo "</property>" >> conf/hive-site.xml
+		echo "<property>" >> conf/hive-site.xml
+		echo "   <name>hive.server2.thrift.http.port</name>" >> conf/hive-site.xml
+		echo "   <value>$HIVE_SERVER_PORT</value>" >> conf/hive-site.xml
+		echo "</property>" >> conf/hive-site.xml
 		echo "</configuration>" >> conf/hive-site.xml
 	else
 		echo "HIVE_METASTORE_HOST is $HIVE_METASTORE_HOST: Skipping hive-site.xml setup as Hive does not seem to be installed"	
@@ -86,15 +94,10 @@ SetupZeppelin () {
 
     if [[ $SETUP_VIEW == "true" ]]
     then
-		git clone https://github.com/abajwa-hw/iframe-view.git
-		sed -i "s/iFrame View/Zeppelin/g" iframe-view/src/main/resources/view.xml
-		sed -i "s/IFRAME_VIEW/ZEPPELIN/g" iframe-view/src/main/resources/view.xml
-		sed -i "s/sandbox.hortonworks.com:6080/$ZEPPELIN_HOST:$ZEPPELIN_PORT/g" iframe-view/src/main/resources/index.html
-		sed -i "s/iframe-view/zeppelin-view/g" iframe-view/pom.xml
-		sed -i "s/Ambari iFrame View/Zeppelin View/g" iframe-view/pom.xml
-		mv iframe-view zeppelin-view
-		cd zeppelin-view
-		mvn clean package
+        cp $PACKAGE_DIR/scripts/zeppelin-view-1.0-SNAPSHOT.jar .
+        $java64_home/bin/jar xf zeppelin-view-1.0-SNAPSHOT.jar index.html
+		sed -i "s/HOST_NAME:HOST_PORT/$ZEPPELIN_HOST:$ZEPPELIN_PORT/g" index.html
+        $java64_home/bin/jar uf zeppelin-view-1.0-SNAPSHOT.jar index.html
 	else
 		echo "Skipping setup of Ambari view"
 	fi
