@@ -39,7 +39,7 @@ config = Script.get_config()
 # e.g. /var/lib/ambari-agent/cache/stacks/HDP/2.2/services/zeppelin-stack/package
 service_packagedir = os.path.realpath(__file__).split('/scripts')[0]
 
-zeppelin_dirname = 'zeppelin/lib'
+zeppelin_dirname = 'zeppelin-server/lib'
 
 # params from zeppelin-ambari-config
 install_dir = config['configurations']['zeppelin-ambari-config']['zeppelin.install.dir']

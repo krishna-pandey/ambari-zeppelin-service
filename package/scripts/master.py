@@ -24,7 +24,7 @@ import grp
 import os
 import pwd
 import sys
-import time
+
 from resource_management import *
 
 reload(sys)
@@ -44,41 +44,9 @@ class Master(Script):
         self.create_linux_user(params.zeppelin_user, params.zeppelin_group)
         # self.create_hdfs_user(params.zeppelin_user, params.spark_jar_dir)
 
-        # remove /usr/hdp/current/zeppelin if already exists
-        Execute('rm -rf ' + params.zeppelin_dir, ignore_failures=True)
-
-        # if on CentOS and python packages specified, install them
-        if params.install_python_packages:
-            distribution = platform.linux_distribution()[0].lower()
-            version = str(platform.linux_distribution()[1])
-            Execute('echo platform.linux_distribution:' + platform.linux_distribution()[0] + '+' +
-                    platform.linux_distribution()[1] + '+' + platform.linux_distribution()[2])
-
-            Execute('echo distribution is: ' + distribution)
-            Execute('echo version is: ' + version)
-
-            # not sure if we really need these.
-            if distribution.startswith('centos'):
-                if version.startswith('7'):
-                    Execute('echo Installing python packages for Centos 7')
-                    Execute('yum install -y epel-release')
-                    Execute('yum install -y python-pip python-matplotlib python-devel numpy scipy '
-                            'python-pandas gcc gcc-c++')
-                    Execute('pip install --user --install-option="--prefix=" -U scikit-learn')
-                if version.startswith('6'):
-                    Execute('echo Installing python packages for Centos 6')
-                    Execute('yum install -y python-devel python-nose python-setuptools gcc '
-                            'gcc-gfortran gcc-c++ blas-devel lapack-devel atlas-devel')
-                    Execute('easy_install pip', ignore_failures=True)
-                    Execute('pip install numpy scipy pandas scikit-learn')
-
-        # User selected option to use prebuilt zeppelin package
-
-
-        Execute('yum install -y zeppelin')
-        Execute('rm -rf /usr/hdp/current/zeppelin')
-        Execute('ln -s /usr/hdp/2.4.1.0-130/zeppelin /usr/hdp/current/zeppelin')
-        Execute('chown -R zeppelin:hadoop /usr/hdp/current/zeppelin/')
+        self.install_packages(env)
+        Execute('pip install numpy scipy pandas scikit-learn')
+        Execute('chown -R zeppelin:hadoop /usr/hdp/current/zeppelin-server/')
 
         # create the log, pid, zeppelin dirs
         Directory([params.zeppelin_pid_dir, params.zeppelin_log_dir, params.zeppelin_dir],
@@ -112,8 +80,9 @@ class Master(Script):
             if params.ambari_host == params.zeppelin_internalhost and not os.path.exists(
                     '/var/lib/ambari-server/resources/views/zeppelin-view-1.0-SNAPSHOT.jar'):
                 Execute('echo "Copying zeppelin view jar to ambari views dir"')
-                Execute('cp /var/lib/zeppelin/*.jar '
-                        '/var/lib/ambari-server/resources/views')
+                Execute(format("cp {service_packagedir}/scripts/*.jar "
+                               "/var/lib/ambari-server/resources/views"))
+                self.restart(env)
 
         Execute('cp ' + params.zeppelin_dir
                 + '/interpreter/spark/dep/zeppelin-spark-dependencies-*.jar /tmp',
