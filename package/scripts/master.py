@@ -33,9 +33,7 @@ sys.setdefaultencoding('utf8')
 
 class Master(Script):
     def install(self, env):
-
         import params
-
         env.set_params(params)
 
         Execute('find ' + params.service_packagedir + ' -iname "*.sh" | xargs chmod +x')
@@ -43,6 +41,15 @@ class Master(Script):
         # Create user and group if they don't exist
         self.create_linux_user(params.zeppelin_user, params.zeppelin_group)
         # self.create_hdfs_user(params.zeppelin_user, params.spark_jar_dir)
+
+        distribution = platform.linux_distribution()[0].lower()
+        # version = str(platform.linux_distribution()[1])
+        Execute('echo platform.linux_distribution:' + platform.linux_distribution()[0] + '+' +
+                platform.linux_distribution()[1] + '+' + platform.linux_distribution()[2])
+
+        if distribution.startswith('centos'):
+            Execute('echo Installing python packages for Centos')
+            Execute('yum install -y epel-release')
 
         self.install_packages(env)
         Execute('pip install numpy scipy pandas scikit-learn')
@@ -82,7 +89,7 @@ class Master(Script):
                 Execute('echo "Copying zeppelin view jar to ambari views dir"')
                 Execute(format("cp {service_packagedir}/scripts/*.jar "
                                "/var/lib/ambari-server/resources/views"))
-                self.restart(env)
+                # self.restart(env)
 
         Execute('cp ' + params.zeppelin_dir
                 + '/interpreter/spark/dep/zeppelin-spark-dependencies-*.jar /tmp',

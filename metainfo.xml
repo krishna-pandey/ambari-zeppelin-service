@@ -21,70 +21,84 @@
         <service>
             <name>ZEPPELIN</name>
             <displayName>Zeppelin Notebook</displayName>
-            <comment>A web-based notebook that enables interactive data analytics. It enables you to make beautiful data-driven, interactive and collaborative documents with SQL, Scala and more.</comment>
+            <comment>A web-based notebook that enables interactive data analytics. It enables you to
+                make beautiful data-driven, interactive and collaborative documents with SQL, Scala
+                and more.
+            </comment>
             <version>0.0.5</version>
             <components>
                 <component>
-                  <name>ZEPPELIN_MASTER</name>
-                  <displayName>Zeppelin Notebook</displayName>
-                  <category>MASTER</category>
-                  <cardinality>1</cardinality>
-                  <commandScript>
-                    <script>scripts/master.py</script>
-                    <scriptType>PYTHON</scriptType>
-                    <timeout>10000</timeout>
-                  </commandScript>
+                    <name>ZEPPELIN_MASTER</name>
+                    <displayName>Zeppelin Notebook</displayName>
+                    <category>MASTER</category>
+                    <cardinality>1</cardinality>
+                    <commandScript>
+                        <script>scripts/master.py</script>
+                        <scriptType>PYTHON</scriptType>
+                        <timeout>10000</timeout>
+                    </commandScript>
                 </component>
             </components>
 
             <osSpecifics>
                 <osSpecific>
-                    <osFamily>any</osFamily>
+                    <osFamily>debian7,ubuntu12,ubuntu14</osFamily>
                     <packages>
+                        <package>
+                            <name>liblapack-dev</name>
+                        </package>
+                        <package>
+                            <name>gfortran</name>
+                        </package>
+                        <package>
+                            <name>python-dev</name>
+                        </package>
+                        <package>
+                            <name>g++</name>
+                        </package>
+                        <package>
+                            <name>python-pip</name>
+                        </package>
                         <package>
                             <name>zeppelin</name>
                         </package>
                     </packages>
                 </osSpecific>
+
                 <osSpecific>
-                    <osFamily>redhat5,redhat6,suse11,ubuntu12,ubuntu14,centos5,centos6,centos7</osFamily>
+                    <osFamily>redhat7,redhat6,redhat5,suse11</osFamily>
                     <packages>
                         <package>
-                            <name>python-pip</name>
+                            <name>gcc-gfortran</name>
                         </package>
                         <package>
-                            <name>python-matplotlib</name>
+                            <name>blas-devel</name>
+                        </package>
+                        <package>
+                            <name>lapack-devel</name>
                         </package>
                         <package>
                             <name>python-devel</name>
                         </package>
                         <package>
-                            <name>numpy</name>
+                            <name>python-pip</name>
                         </package>
                         <package>
-                            <name>scipy</name>
-                        </package>
-                        <package>
-                            <name>python-pandas</name>
-                        </package>
-                        <package>
-                            <name>gcc</name>
-                        </package>
-                        <package>
-                            <name>gcc-c++</name>
+                            <name>zeppelin</name>
                         </package>
                     </packages>
                 </osSpecific>
+
             </osSpecifics>
 
             <requiredServices>
                 <service>SPARK</service>
             </requiredServices>
 
-      	    <configuration-dependencies>
-        	<config-type>zeppelin-ambari-config</config-type>
-        	<config-type>zeppelin-config</config-type>
-      	    </configuration-dependencies>
+            <configuration-dependencies>
+                <config-type>zeppelin-ambari-config</config-type>
+                <config-type>zeppelin-config</config-type>
+            </configuration-dependencies>
             <restartRequiredAfterChange>false</restartRequiredAfterChange>
         </service>
     </services>
